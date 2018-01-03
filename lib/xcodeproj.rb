@@ -1,8 +1,8 @@
 module Xcodeproj
   require 'pathname'
-  require 'claide'
   require 'colored2'
-
+  require 'claide'
+ 
   class PlainInformative < StandardError
     include CLAide::InformativeError
   end

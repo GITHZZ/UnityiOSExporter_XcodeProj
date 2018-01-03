@@ -349,6 +349,7 @@ module Xcodeproj
             unless ref = group.find_file_by_path(path)
               ref = group.new_file(path, :developer_dir)
             end
+
             frameworks_build_phase.add_file_reference(ref, true)
             ref
           end

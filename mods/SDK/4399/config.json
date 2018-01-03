@@ -1,0 +1,7 @@
+{
+	"frameworks":[
+		"StoreKit"
+	],
+	"Libs":[],
+	"linker_flags":[]
+}
