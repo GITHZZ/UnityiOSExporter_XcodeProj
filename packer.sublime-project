@@ -3,6 +3,9 @@
 	[
 		{
 			"path": "."
+		},
+		{
+			"path": "/Users/a4399/Documents/Projects/XcodeExportTest/XcodeProj/Unity-iPhone.xcodeproj/project.xcworkspace"
 		}
 	]
 }

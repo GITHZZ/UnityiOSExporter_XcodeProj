@@ -11,8 +11,6 @@ class XcodeProjectUpdater
 		@framework_search_paths_array = Array.new()
 
 		@unity_class_group = new_group(File.join(@group_root_path), PROJECT_RESOURCE_PATH)
-
-		@framework_group = $project.main_group.find_subpath("Frameworks")
 	end
 
 	def start()
@@ -20,6 +18,11 @@ class XcodeProjectUpdater
 		if !@unity_class_group.empty?
 			remove_build_phase_files_recursively(@target, @unity_class_group)
 			@unity_class_group.clear()
+		end 
+
+		if $project.frameworks_group['iOS'] and !$project.frameworks_group['iOS'].empty? 
+			remove_build_phase_files_recursively(@target, $project.frameworks_group['iOS'])
+			$project.frameworks_group['iOS'].clear()		
 		end 
 
 		#新增引用
@@ -36,7 +39,7 @@ class XcodeProjectUpdater
 		group.files.each do |file|
 			if file.real_path.to_s.end_with?(".m", ".mm", ".cpp") 
 				target.source_build_phase.remove_file_reference(file)
-			elsif file.real_path.to_s.end_with?(".framework") 
+			elsif file.real_path.to_s.end_with?(".framework", ".a") 
 				target.frameworks_build_phases.remove_file_reference(file)
 			elsif file.real_path.to_s.end_with?(".bundle") 
 				target.resources_build_phase.remove_file_reference(file)
@@ -68,7 +71,7 @@ class XcodeProjectUpdater
 					file_ref = group.new_reference(newPath)
 					if newPath.to_s.end_with?(".m", ".mm", ".cpp") 
 						target.source_build_phase.add_file_reference(file_ref)
-					elsif newPath.to_s.end_with?(".framework") 
+					elsif newPath.to_s.end_with?(".framework", ".a") 
 						target.frameworks_build_phases.add_file_reference(file_ref)
 					elsif newPath.to_s.end_with?(".bundle") 
 						target.resources_build_phase.add_file_reference(file_ref)
@@ -78,31 +81,11 @@ class XcodeProjectUpdater
 		end 
 	end 
 
-	#新增一个xcode-group
-	def new_group(path, relation_path)
-		unity_class_group = $project.main_group.find_subpath(path, true)
-		unity_class_group.set_source_tree('<group>')
-		unity_class_group.set_path(relation_path)
-		return unity_class_group
-	end 
-
 	#新增framework查找路径
 	def set_framework_search_path()
-		set_build_setting_form_current_target(@target, "FRAMEWORK_SEARCH_PATHS", @framework_search_paths_array)
+		set_build_setting(@target, "FRAMEWORK_SEARCH_PATHS", @framework_search_paths_array)
 	end 
 
-	#需要查查 应该可以不这么写的
-	def set_build_setting_form_current_target(target, key, value)
-		target_build_settings_1 = target.build_settings("Debug")
-		target_build_settings_2 = target.build_settings("Release")
-		target_build_settings_3 = target.build_settings("ReleaseForProfiling")
-		target_build_settings_4 = target.build_settings("ReleaseForRunning")
-
-		target_build_settings_1[key] = value
-		target_build_settings_2[key] = value
-		target_build_settings_3[key] = value
-		target_build_settings_4[key] = value
-	end
 
 	#覆盖UnityAppController中的文件UI
 	def replace_unity_app_controller_file(xcode_project_path, mod_path)
@@ -130,14 +113,41 @@ class XcodeProjectUpdater
 		#新增系统framework
 		@target.add_system_framework(frameworks)
 
-		# frameworks.each do |item|	
-		# 	puts item
-		# 	file_refs = @target.add_system_framework()
-		# 	@target.frameworks_build_phases.add_file_reference(file_ref)
-		# end 
+		#新增lib(tbd)
+		@target.add_system_library(libs)
+
+		#设置linker_flags
+		set_build_setting(@target, "OTHER_LDFLAGS", linker_flags)
+
+		#设置证书信息
+		develop_signing_identity = setting_hash["develop_signing_identity"]
+		set_build_setting(@target, "PROVISIONING_PROFILE_SPECIFIER", develop_signing_identity[0], "Debug")
+		set_build_setting(@target, "DEVELOPMENT_TEAM", develop_signing_identity[1], "Debug")
+		set_build_setting(@target, "CODE_SIGN_IDENTITY[sdk=iphoneos*]", "iPhone Developer", "Debug")
+
+		release_signing_identity = setting_hash["release_signing_identity"]
+		set_build_setting(@target, "PROVISIONING_PROFILE_SPECIFIER", release_signing_identity[0], "Release")
+		set_build_setting(@target, "DEVELOPMENT_TEAM", release_signing_identity[1], "Release")
+		set_build_setting(@target, "CODE_SIGN_IDENTITY[sdk=iphoneos*]", "iPhone Distribution", "Release")
+
+		enable_bitCode = setting_hash["enable_bit_code"]
+		set_build_setting(@target, "ENABLE_BITCODE", enable_bitCode)
+	end
+
+	#新增一个xcode-group
+	def new_group(path, relation_path)
+		unity_class_group = $project.main_group.find_subpath(path, true)
+		unity_class_group.set_source_tree('<group>')
+		unity_class_group.set_path(relation_path)
+		return unity_class_group
 	end 
 
-	def add_system_framework(names)
-
-	end 
+	def set_build_setting(target, key, value, build_configuration_name = "All")
+		target.build_configurations.each do |config|
+			if build_configuration_name == "All" || build_configuration_name == config.to_s then
+				build_settings = config.build_settings
+				build_settings[key] = value
+			end
+		end 
+	end
 end

@@ -2,6 +2,23 @@
 	"frameworks":[
 		"StoreKit"
 	],
-	"Libs":[],
-	"linker_flags":[]
+	"Libs":[
+		"libz"
+	],
+	"linker_flags":[
+		"$(OTHER_LDFLAGS)",
+		"-weak_framework",
+		"CoreMotion",
+		"-weak-lSystem",
+		"-ObjC"
+	],
+	"develop_signing_identity":[
+		"prodev20171209",
+		"J2W4CKZ3TV"
+	],
+	"release_signing_identity":[
+		"prodis20171209",
+		"J2W4CKZ3TV"
+	],
+	"enable_bit_code":"NO"
 }

@@ -363,13 +363,35 @@ module Xcodeproj
         #         The name or the list of the names of the libraries.
         #
         # @return [void]
-        #
+        # 
+        # @change by hzz on 2018/01/01
         def add_system_library(names)
           Array(names).each do |name|
-            path = "usr/lib/lib#{name}.dylib"
+            case platform_name
+            when :ios
+              group = project.frameworks_group['iOS'] || project.frameworks_group.new_group('iOS')
+              path_sdk_name = 'iPhoneOS'
+              path_sdk_version = sdk_version || Constants::LAST_KNOWN_IOS_SDK
+            when :osx
+              group = project.frameworks_group['OS X'] || project.frameworks_group.new_group('OS X')
+              path_sdk_name = 'MacOSX'
+              path_sdk_version = sdk_version || Constants::LAST_KNOWN_OSX_SDK
+            when :tvos
+              group = project.frameworks_group['tvOS'] || project.frameworks_group.new_group('tvOS')
+              path_sdk_name = 'AppleTVOS'
+              path_sdk_version = sdk_version || Constants::LAST_KNOWN_TVOS_SDK
+            when :watchos
+              group = project.frameworks_group['watchOS'] || project.frameworks_group.new_group('watchOS')
+              path_sdk_name = 'WatchOS'
+              path_sdk_version = sdk_version || Constants::LAST_KNOWN_WATCHOS_SDK
+            else
+              raise 'Unknown platform for target'
+            end
+
+            path = "usr/lib/#{name}.tbd"
             files = project.frameworks_group.files
-            unless reference = files.find { |ref| ref.path == path }
-              reference = project.frameworks_group.new_file(path, :sdk_root)
+            unless reference = group.find_file_by_path(path)
+              reference = group.new_file(path, :sdk_root)
             end
             frameworks_build_phase.add_file_reference(reference, true)
             reference
