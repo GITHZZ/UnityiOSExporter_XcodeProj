@@ -41,7 +41,7 @@ class XcodeProjectUpdater
 				target.source_build_phase.remove_file_reference(file)
 			elsif file.real_path.to_s.end_with?(".framework", ".a") 
 				target.frameworks_build_phases.remove_file_reference(file)
-			elsif file.real_path.to_s.end_with?(".bundle") 
+			elsif file.real_path.to_s.end_with?(".bundle", ".jpg", ".png") 
 				target.resources_build_phase.remove_file_reference(file)
 			end
 		end 
@@ -59,12 +59,13 @@ class XcodeProjectUpdater
 				elsif file_type == 'directory' and !newPath.include?"." 
 					@framework_search_paths_array.insert(@framework_search_paths_array.size - 1, newPath)
 
+					parent_path = @group_sub_path
 					@group_sub_path = "#{@group_sub_path}/#{dir}"
 					new_group = new_group(File.join(@group_sub_path), newPath)
 					
 					add_build_phase_files(target, new_group, newPath)
 
-					@group_sub_path = @group_root_path					
+					@group_sub_path = parent_path				
 				elsif newPath.to_s.end_with?(".json")
 					set_build_settings_form_config(newPath)
 				else
@@ -73,7 +74,7 @@ class XcodeProjectUpdater
 						target.source_build_phase.add_file_reference(file_ref)
 					elsif newPath.to_s.end_with?(".framework", ".a") 
 						target.frameworks_build_phases.add_file_reference(file_ref)
-					elsif newPath.to_s.end_with?(".bundle") 
+					elsif newPath.to_s.end_with?(".bundle", ".jpg", ".png") 
 						target.resources_build_phase.add_file_reference(file_ref)
 					end
 				end
