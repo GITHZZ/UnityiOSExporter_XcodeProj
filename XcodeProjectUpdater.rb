@@ -52,11 +52,14 @@ class XcodeProjectUpdater
 			newPath = "#{path}/#{dir}"
 
 			#Classes为特殊文件夹-过滤
-			if dir != '.' and dir != '..' and dir != '.DS_Store' 
+			if dir != '.' and dir != '..' and dir != ".DS_Store" 
 				file_type = File::ftype(newPath)
-				if dir == 'Classes'
-					replace_unity_app_controller_file($project_folder_path, newPath)
-				elsif file_type == 'directory' and !newPath.include?"." 
+
+				if dir == "Classes"
+					replace_unity_app_controller_file(newPath)
+				elsif newPath.to_s.end_with?("Unity-iPhone")
+				 	copy_unity_iphone_folder(newPath)
+				elsif file_type == "directory" and !newPath.include?"." 
 					@framework_search_paths_array.insert(@framework_search_paths_array.size - 1, newPath)
 
 					parent_path = @group_sub_path
@@ -89,18 +92,23 @@ class XcodeProjectUpdater
 
 
 	#覆盖UnityAppController中的文件UI
-	def replace_unity_app_controller_file(xcode_project_path, mod_path)
+	def replace_unity_app_controller_file(mod_path)
 		h_file_path = "#{mod_path}/UnityAppController.h"
 		m_file_path = "#{mod_path}/UnityAppController.mm"
 
 		if File::exist?(h_file_path)
-			FileUtils.cp "#{mod_path}/UnityAppController.h", "#{xcode_project_path}/Classes"
+			FileUtils.cp "#{mod_path}/UnityAppController.h", "#{$project_folder_path}/Classes"
 		end 
 
 		if File::exist?(m_file_path)
-			FileUtils.cp "#{mod_path}/UnityAppController.mm", "#{xcode_project_path}/Classes"
+			FileUtils.cp "#{mod_path}/UnityAppController.mm", "#{$project_folder_path}/Classes"
 		end
 	end 
+
+	#用于替换图标和LaunchImage图
+	def copy_unity_iphone_folder(path)
+		FileUtils.cp_r path, $project_folder_path
+	end
 
 	#解析配置文件(新增系统相关库)
 	def set_build_settings_form_config(config_path)
