@@ -8,7 +8,7 @@ $LOAD_PATH << File.join(PROJECT_ROOT_PATH, "/lib")
 require "xcodeproj"
 require_relative "XcodeProjectUpdater"
 
-$project_folder_path = "/Users/a4399/Documents/Projects/XcodeExportTest/XcodeProj"
+$project_folder_path = "/Users/hezunzu/Develop/unity/UnityXcodeApiExport/UnityXcodeApiExport"
 $project_path = "#{$project_folder_path}/Unity-iPhone.xcodeproj"
 
 $project = Xcodeproj::Project.open($project_path)
