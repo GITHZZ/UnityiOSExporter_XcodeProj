@@ -8,9 +8,27 @@ class XcodeProjectUpdater
 		@group_root_path = 'SDK'
 		@group_sub_path = @group_root_path
 
-		@framework_search_paths_array = Array.new()
-
 		@unity_class_group = new_group(File.join(@group_root_path), PROJECT_RESOURCE_PATH)
+
+		@framework_search_paths_array = Array.new()
+		@framework_search_paths_array.insert(@framework_search_paths_array.size - 1, PROJECT_RESOURCE_PATH)
+
+		@header_search_paths_array = [
+			"$(inherited)",
+			"\"$(SRCROOT)/Classes\"",
+			"\"$(SRCROOT)\"",
+			"$(SRCROOT)/Classes/Native",
+			"$(SRCROOT)/Libraries/bdwgc/include",
+			"$(SRCROOT)/Libraries/libil2cpp/include",
+		]
+		@header_search_paths_array.insert(@header_search_paths_array.size - 1, PROJECT_RESOURCE_PATH)
+
+		@library_search_paths_array = [
+			"$(inherited)",
+			"\"$(SRCROOT)\"",
+			"\"$(SRCROOT)/Libraries\"",
+		]
+		@library_search_paths_array.insert(@library_search_paths_array.size - 1, PROJECT_RESOURCE_PATH)
 	end
 
 	def start()
@@ -27,8 +45,9 @@ class XcodeProjectUpdater
 
 		#新增引用
 		add_build_phase_files(@target, @unity_class_group, PROJECT_RESOURCE_PATH)
-		#新增Framework查找路径
-		set_framework_search_path()
+	
+		#新增相关查找路径
+		set_search_path()
 	end 
 
 	def remove_build_phase_files_recursively(target, group)
@@ -61,6 +80,8 @@ class XcodeProjectUpdater
 				 	copy_unity_iphone_folder(newPath)
 				elsif file_type == "directory" and !newPath.include?"." 
 					@framework_search_paths_array.insert(@framework_search_paths_array.size - 1, newPath)
+					@header_search_paths_array.insert(@header_search_paths_array.size - 1, newPath)
+					@library_search_paths_array.insert(@library_search_paths_array.size - 1, newPath)
 
 					parent_path = @group_sub_path
 					@group_sub_path = "#{@group_sub_path}/#{dir}"
@@ -86,10 +107,11 @@ class XcodeProjectUpdater
 	end 
 
 	#新增framework查找路径
-	def set_framework_search_path()
+	def set_search_path()
 		set_build_setting(@target, "FRAMEWORK_SEARCH_PATHS", @framework_search_paths_array)
+		set_build_setting(@target, "HEADER_SEARCH_PATHS", @header_search_paths_array)
+		set_build_setting(@target, "LIBRARY_SEARCH_PATHS", @library_search_paths_array)
 	end 
-
 
 	#覆盖UnityAppController中的文件UI
 	def replace_unity_app_controller_file(mod_path)
@@ -159,4 +181,13 @@ class XcodeProjectUpdater
 			end
 		end 
 	end
+
+	def get_build_setting(target, key, build_configuration_name = "All")
+		target.build_configurations.each do |config|
+			if build_configuration_name == "All" || build_configuration_name == config.to_s then
+				build_settings = config.build_settings
+				return build_settings[key]
+			end
+		end 
+	end 
 end
