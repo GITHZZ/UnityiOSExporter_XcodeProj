@@ -26,6 +26,14 @@ module Xcodeproj
         #
         attribute :name, String
 
+        # @return [String] the platform filter for this target dependency.
+        #
+        attribute :platform_filter, String
+
+        # @return [String] the product reference for this target dependency.
+        #
+        attribute :product_ref, String
+
         public
 
         # @!group AbstractObject Hooks
@@ -65,6 +73,7 @@ module Xcodeproj
           hash = {}
           hash['displayName'] = display_name
           hash['isa'] = isa
+          hash['targetProxy'] = target_proxy.to_tree_hash
           hash
         end
 

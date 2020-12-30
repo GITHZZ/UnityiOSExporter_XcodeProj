@@ -42,6 +42,11 @@ module Xcodeproj
         attribute :is_editable, String, '1'
 
         # @return [ObjectList<PBXFileReference>] the file references for the
+        #         input files files.
+        #
+        attribute :input_files, Array
+
+        # @return [ObjectList<PBXFileReference>] the file references for the
         #         output files.
         #
         attribute :output_files, Array
@@ -50,6 +55,13 @@ module Xcodeproj
         #         respective output files.
         #
         attribute :output_files_compiler_flags, Array
+
+        # @return [String] whether the rule should be run once per architecture.
+        #
+        # @example
+        #   `0`.
+        #
+        attribute :run_once_per_architecture, String
 
         # @return [String] the content of the script to use for the build rule.
         #

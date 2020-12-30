@@ -9,8 +9,11 @@ require 'xcodeproj/scheme/archive_action'
 
 require 'xcodeproj/scheme/buildable_product_runnable'
 require 'xcodeproj/scheme/buildable_reference'
+require 'xcodeproj/scheme/execution_action'
 require 'xcodeproj/scheme/macro_expansion'
 require 'xcodeproj/scheme/remote_runnable'
+require 'xcodeproj/scheme/send_email_action_content'
+require 'xcodeproj/scheme/shell_script_action_content'
 
 module Xcodeproj
   # This class represents a Scheme document represented by a ".xcscheme" file
@@ -31,7 +34,9 @@ module Xcodeproj
     def initialize(file_path = nil)
       if file_path
         @file_path = file_path
-        @doc = REXML::Document.new(File.new(file_path))
+        @doc = File.open(file_path, 'r') do |f|
+          REXML::Document.new(f)
+        end
         @doc.context[:attribute_quote] = :quote
 
         @scheme = @doc.elements['Scheme']
@@ -64,13 +69,18 @@ module Xcodeproj
     # @param [Xcodeproj::Project::Object::PBXAbstractTarget] test_target
     #        The target to use for the 'Test' action
     #
-    def configure_with_targets(runnable_target, test_target)
-      build_action.add_entry BuildAction::Entry.new(runnable_target) if runnable_target
-      build_action.add_entry BuildAction::Entry.new(test_target) if test_target
-
-      test_action.add_testable TestAction::TestableReference.new(test_target) if test_target
-      launch_action.buildable_product_runnable = BuildableProductRunnable.new(runnable_target, 0) if runnable_target
-      profile_action.buildable_product_runnable = BuildableProductRunnable.new(runnable_target) if runnable_target
+    # @param [Boolean] launch_target
+    #        Determines if the runnable_target is launchable.
+    #
+    def configure_with_targets(runnable_target, test_target, launch_target: false)
+      if runnable_target
+        add_build_target(runnable_target)
+        set_launch_target(runnable_target) if launch_target
+      end
+      if test_target
+        add_build_target(test_target, false) if test_target != runnable_target
+        add_test_target(test_target)
+      end
     end
 
     public
@@ -188,9 +198,9 @@ module Xcodeproj
 
       entry.build_for_testing   = true
       entry.build_for_running   = build_for_running
-      entry.build_for_profiling = true
-      entry.build_for_archiving = true
-      entry.build_for_analyzing = true
+      entry.build_for_profiling = build_for_running
+      entry.build_for_archiving = build_for_running
+      entry.build_for_analyzing = build_for_running
 
       build_action.add_entry(entry)
     end
@@ -338,6 +348,7 @@ module Xcodeproj
         output << "<#{node.expanded_name}"
 
         @level += @indentation
+        node.context = node.parent.context # HACK: to ensure strings are properly quoted
         node.attributes.each_attribute do |attr|
           output << "\n"
           output << ' ' * @level

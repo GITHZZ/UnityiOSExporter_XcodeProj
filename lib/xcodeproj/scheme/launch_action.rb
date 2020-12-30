@@ -47,6 +47,40 @@ module Xcodeproj
         @xml_element.attributes['allowLocationSimulation'] = bool_to_string(flag)
       end
 
+      # @return [Bool]
+      #         Whether this Build Action should disable detection of UI API misuse
+      #         from background threads
+      #
+      def disable_main_thread_checker?
+        string_to_bool(@xml_element.attributes['disableMainThreadChecker'])
+      end
+
+      # @param [Bool] flag
+      #        Set whether this Build Action should disable detection of UI API misuse
+      #        from background threads
+      #
+      def disable_main_thread_checker=(flag)
+        @xml_element.attributes['disableMainThreadChecker'] = bool_to_string(flag)
+      end
+
+      # @return [Bool]
+      #         Whether UI API misuse from background threads detection should pause execution.
+      #         This flag is ignored when the thread checker disabled
+      #         ([disable_main_thread_checker] flag).
+      #
+      def stop_on_every_main_thread_checker_issue?
+        string_to_bool(@xml_element.attributes['stopOnEveryMainThreadCheckerIssue'])
+      end
+
+      # @param [Bool] flag
+      #         Set whether UI API misuse from background threads detection should pause execution.
+      #         This flag is ignored when the thread checker disabled
+      #         ([disable_main_thread_checker] flag).
+      #
+      def stop_on_every_main_thread_checker_issue=(flag)
+        @xml_element.attributes['stopOnEveryMainThreadCheckerIssue'] = bool_to_string(flag)
+      end
+
       # @return [String]
       #         The launch automatically substyle
       #
@@ -108,6 +142,22 @@ module Xcodeproj
         @xml_element.delete_element(XCScheme::COMMAND_LINE_ARGS_NODE)
         @xml_element.add_element(arguments.xml_element) if arguments
         arguments
+      end
+
+      # @return [Array<MacroExpansion>]
+      #         The list of MacroExpansion bound with this LaunchAction
+      #
+      def macro_expansions
+        @xml_element.get_elements('MacroExpansion').map do |node|
+          MacroExpansion.new(node)
+        end
+      end
+
+      # @param [MacroExpansion] macro_expansion
+      #        Add a MacroExpansion to this LaunchAction
+      #
+      def add_macro_expansion(macro_expansion)
+        @xml_element.add_element(macro_expansion.xml_element)
       end
     end
   end

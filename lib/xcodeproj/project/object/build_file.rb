@@ -18,7 +18,7 @@ module Xcodeproj
         #
         attribute :settings, Hash
 
-        # @return [PBXFileReference] the file that to build.
+        # @return [PBXFileReference] the file to build.
         #
         # @todo   I think that is possible to add any kind of group (for
         #         example folders linked to a path).
@@ -31,6 +31,14 @@ module Xcodeproj
           PBXReferenceProxy,
         ]
 
+        # @return [XCSwiftPackageProductDependency] the Swift Package file to build.
+        #
+        has_one :product_ref, XCSwiftPackageProductDependency
+
+        # @return [String] the platform filter for this build file.
+        #
+        attribute :platform_filter, String
+
         #---------------------------------------------------------------------#
 
         public
@@ -41,7 +49,9 @@ module Xcodeproj
         #         user.
         #
         def display_name
-          if file_ref
+          if product_ref
+            product_ref.display_name
+          elsif file_ref
             file_ref.display_name
           else
             super

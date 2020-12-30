@@ -30,6 +30,16 @@ module Xcodeproj
         #
         attribute :run_only_for_deployment_postprocessing, String, '0'
 
+        # @return [String] whether or not this run script will be forced to
+        #         run even on incremental builds. Can be either '1', or
+        #         missing. By default this option is disabled in Xcode.
+        #
+        # @note   This setting is exposed in Xcode in the UI of
+        #         PBXShellScriptBuildPhase as `Based on
+        #         dependency analysis` (selected by default).
+        #
+        attribute :always_out_of_date, String
+
         # @return [String] Comments associated with this build phase.
         #
         # @note   This is apparently no longer used by Xcode.
@@ -204,6 +214,19 @@ module Xcodeproj
         #
         attribute :dst_subfolder_spec, String, Constants::COPY_FILES_BUILD_PHASE_DESTINATIONS[:resources]
 
+        # @return [Hash{String => Hash}] A hash suitable to display the build
+        #         phase to the user.
+        #
+        def pretty_print
+          {
+            display_name => {
+              'Destination Path' => dst_path,
+              'Destination Subfolder' => Constants::COPY_FILES_BUILD_PHASE_DESTINATIONS.key(dst_subfolder_spec).to_s,
+              'Files' => files.map(&:pretty_print),
+            },
+          }
+        end
+
         # Alias method for #dst_subfolder_spec=, which accepts symbol values
         # instead of numeric string values.
         #
@@ -250,12 +273,26 @@ module Xcodeproj
         #
         attribute :input_paths, Array, []
 
+        # @return [Array<String>] an array of input file list paths of the script.
+        #
+        # @example
+        #   "$(SRCROOT)/newInputFile.xcfilelist"
+        #
+        attribute :input_file_list_paths, Array, []
+
         # @return [Array<String>] an array of output paths of the script.
         #
         # @example
         #   "$(DERIVED_FILE_DIR)/myfile"
         #
         attribute :output_paths, Array, []
+
+        # @return [Array<String>] an array of output file list paths of the script.
+        #
+        # @example
+        #   "$(SRCROOT)/newOutputFile.xcfilelist"
+        #
+        attribute :output_file_list_paths, Array, []
 
         # @return [String] the path to the script interpreter.
         #
@@ -265,16 +302,34 @@ module Xcodeproj
 
         # @return [String] the actual script to perform.
         #
-        # @note   Defaults to the empty string.
+        # @note   Defaults to a comment string.
         #
-        attribute :shell_script, String, ''
+        attribute :shell_script, String, "# Type a script or drag a script file from your workspace to insert its path.\n"
 
         # @return [String] whether or not the ENV variables should be shown in
         #         the build log.
         #
-        # @note   Defaults to true (`1`).
+        attribute :show_env_vars_in_log, String
+
+        # @return [String] the discovered dependency file to use.
         #
-        attribute :show_env_vars_in_log, String, '1'
+        attribute :dependency_file, String
+
+        # @return [Hash{String => Hash}] A hash suitable to display the build
+        #         phase to the user.
+        #
+        def pretty_print
+          {
+            display_name => {
+              'Input File List Paths' => input_file_list_paths || [],
+              'Input Paths' => input_paths || [],
+              'Output File List Paths' => output_file_list_paths || [],
+              'Output Paths' => output_paths || [],
+              'Shell Path' => shell_path,
+              'Shell Script' => shell_script,
+            },
+          }
+        end
       end
 
       #-----------------------------------------------------------------------#
