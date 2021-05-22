@@ -34,13 +34,13 @@ module Xcodeproj
     #
     LAST_KNOWN_OBJECT_VERSION = 54
 
-    # @return [String] The last known Xcode version to Xcodeproj.
+    # @return [String] The last known object version to Xcodeproj.
     #
-    LAST_UPGRADE_CHECK = '1230'
+    LAST_UPGRADE_CHECK = '1100'
 
-    # @return [String] The last known Xcode version to Xcodeproj.
+    # @return [String] The last known object version to Xcodeproj.
     #
-    LAST_SWIFT_UPGRADE_CHECK = '1230'
+    LAST_SWIFT_UPGRADE_CHECK = '1100'
 
     # @return [String] The version of `.xcscheme` files supported by Xcodeproj
     #
@@ -453,12 +453,5 @@ module Xcodeproj
       $(inherited)
       ${inherited}
     ).freeze
-
-    # @return [Hash] Possible types for a scheme's 'ExecutionAction' node
-    #
-    EXECUTION_ACTION_TYPE = {
-      :shell_script  => 'Xcode.IDEStandardExecutionActionsCore.ExecutionActionType.ShellScriptAction',
-      :send_email    => 'Xcode.IDEStandardExecutionActionsCore.ExecutionActionType.SendEmailAction',
-    }.freeze
   end
 end

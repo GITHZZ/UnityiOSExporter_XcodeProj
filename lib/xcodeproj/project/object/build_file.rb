@@ -49,9 +49,7 @@ module Xcodeproj
         #         user.
         #
         def display_name
-          if product_ref
-            product_ref.display_name
-          elsif file_ref
+          if file_ref
             file_ref.display_name
           else
             super
