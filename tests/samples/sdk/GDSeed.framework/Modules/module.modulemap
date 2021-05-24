@@ -1,0 +1,6 @@
+framework module GDSeed {
+  umbrella header "GDSeed.h"
+
+  export *
+  module * { export * }
+}

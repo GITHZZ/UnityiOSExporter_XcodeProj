@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>channel_id</key>
+	<string>10</string>
+	<key>client_id</key>
+	<string>1621820618293160</string>
+	<key>orientation</key>
+	<string>1</string>
+	<key>clientKey</key>
+	<string>7561ab505313d71c94be555eb8ca42b8</string>
+	<key>sdkversion</key>
+	<string>1.0.3</string>
+</dict>
+</plist>

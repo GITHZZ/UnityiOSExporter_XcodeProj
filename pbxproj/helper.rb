@@ -12,7 +12,7 @@ module PbxprojHelper
     def win32?
         require 'Win32API'
         return true
-    rescue
+    rescue LoadError
         return false
     end 
 
