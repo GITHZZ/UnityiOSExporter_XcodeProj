@@ -6,16 +6,17 @@ class PbxprojLoader
 
     def initialize(xcodeproj_path)
         @xcodeproj_path = xcodeproj_path
+        
         backup_or_revert_pbxproj()
+        copy_group_resource_to_project()
 
         @project = Xcodeproj::Project.open(xcodeproj_path)
         @target = @project.targets.first
 
-        @header_search_paths    = get_build_setting(@target, "HEADER_SEARCH_PATHS")
-        @library_search_paths   = get_build_setting(@target, "LIBRARY_SEARCH_PATHS")
+        @header_search_paths = get_build_setting(@target, "HEADER_SEARCH_PATHS")
+        @library_search_paths = get_build_setting(@target, "LIBRARY_SEARCH_PATHS")
         @framework_search_paths = get_build_setting(@target, "FRAMEWORK_SEARCH_PATHS")
 
-        copy_group_resource_to_project()
     end 
 
     def is_embed_frameworks?(path)
@@ -72,6 +73,7 @@ class PbxprojLoader
         end 
     end
     
+    # 不直接引用资源目录下的资源，先复制到工程下 再进行引用
     def copy_group_resource_to_project()
         project_folder_path = File.dirname(@xcodeproj_path)
         sdk_res_path = GLOBAL_CONFIG["sdk_res_path"]

@@ -1,4 +1,4 @@
-# 总体思路有所改变， 不再是直接引用，而是将资源拷贝到工程中再进行引用
+# 总体思路有所改变 不再是直接引用，而是将资源拷贝到工程中再进行引用
 require_relative "loader"
 
 class PbxprojModify
@@ -22,7 +22,10 @@ class PbxprojModify
 
     def start()
         add_build_phase_files(@target, @group, @loader.group_full_path)
+        # 整理动态库 
         generate_embed_framework()
+        # 新增相关查找路径
+		set_build_search_path()
     end 
 
     # project mark - create_group 生成模板
@@ -95,8 +98,15 @@ class PbxprojModify
         end 
     end 
 
-    def set_build_setting(key, value, build_configuration_name = "All")
-        @target.build_config.each do |config|
+    def set_build_search_path()
+        set_build_setting(@target, "FRAMEWORK_SEARCH_PATHS", @framework_search_paths)
+		set_build_setting(@target, "HEADER_SEARCH_PATHS", @header_search_paths)
+		set_build_setting(@target, "LIBRARY_SEARCH_PATHS", @library_search_paths)
+		set_build_setting(@target, "LD_RUNPATH_SEARCH_PATHS", "$(inherited) @executable_path/Frameworks")
+    end 
+
+    def set_build_setting(target, key, value, build_configuration_name = "All")
+        target.build_configurations.each do |config|
             if build_configuration_name == "All" || build_configuration_name == config.to_s
                 build_settings = config.build_settings
                 build_settings[key] = value
