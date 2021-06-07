@@ -4,19 +4,18 @@ class PbxprojLoader
     attr_reader :xcodeproj_path, :project, :target, :group_full_path
     attr_accessor :header_search_paths, :library_search_paths, :framework_search_paths
 
-    def initialize(xcodeproj_path)
-        @xcodeproj_path = xcodeproj_path
+    def initialize()
+        @xcodeproj_path = GLOBAL_CONFIG["xcodeproj_path"] 
         
         backup_or_revert_pbxproj()
         copy_group_resource_to_project()
 
-        @project = Xcodeproj::Project.open(xcodeproj_path)
+        @project = Xcodeproj::Project.open(@xcodeproj_path)
         @target = @project.targets.first
 
         @header_search_paths = get_build_setting(@target, "HEADER_SEARCH_PATHS")
         @library_search_paths = get_build_setting(@target, "LIBRARY_SEARCH_PATHS")
         @framework_search_paths = get_build_setting(@target, "FRAMEWORK_SEARCH_PATHS")
-
     end 
 
     def is_embed_frameworks?(path)

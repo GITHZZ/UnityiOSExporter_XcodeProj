@@ -2,8 +2,19 @@
 require_relative "loader"
 
 class PbxprojModify
-    def initialize(xcodeproj_path)
-        @loader = PbxprojLoader.new(xcodeproj_path)
+    # ------提供给外部shell调用---------
+    def get_shell_support_function()
+        return ["method_call_from_shell_1"]
+    end 
+
+    def method_call_from_shell_1(*args)
+        start()
+        free()
+    end 
+    # --------------------------------
+
+    def initialize()
+        @loader = PbxprojLoader.new()
         @project = @loader.project
         @target = @loader.target
         
