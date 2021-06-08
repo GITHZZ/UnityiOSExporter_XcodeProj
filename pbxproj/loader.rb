@@ -22,10 +22,11 @@ class PbxprojLoader
         basename = Pathname.new(path).basename.to_s
         if PbxprojHelper.win32?
             embed_framework_list = GLOBAL_CONFIG["embed_framework_list"]
+            puts embed_framework_list
             embed_framework_list.each do |fremework_name|
                 if framework_name == basename
                     return true
-                end 
+                end
             end
             return false
         else
@@ -41,7 +42,12 @@ class PbxprojLoader
             if name.to_s == "Embed Frameworks"
                 return build_phases
             end 
-        end 
+        end
+
+        # 如果没有，则自己创建
+        embed_build_phases = @target.new_copy_files_build_phase("Embed Frameworks")
+		embed_build_phases.symbol_dst_subfolder_spec = :frameworks  #暂时只支持framework类型 后续扩展
+        return embed_build_phases
     end 
 
     def get_build_setting(target, key, build_configuration_name = "All")

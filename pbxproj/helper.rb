@@ -1,6 +1,9 @@
 module PbxprojHelper
     def framework_is_embed(path)
-        shell_string = "file\t" + path
+        exe_name = File.basename(path, ".*")
+        exe_full_path = PROJECT_ROOT_FULL_PATH + "/" + GLOBAL_CONFIG["sdk_res_path"] + "/" + path + "/" + exe_name
+
+        shell_string = "file\t" + exe_full_path
         r = %x(#{shell_string})
 
         if r.include?("dynamically")

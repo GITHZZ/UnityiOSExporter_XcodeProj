@@ -1,4 +1,8 @@
+require "pathname" 
+
+PROJECT_ROOT_FULL_PATH = Pathname.new(File.dirname(__FILE__)).realpath.to_s
 PROJECT_ROOT_PATH = File.dirname(__FILE__)
+
 # 配置搜索路径
 $LOAD_PATH << File.join(PROJECT_ROOT_PATH, "/lib")
 
@@ -14,7 +18,7 @@ require_relative "pbxproj/driver"
 OPTIONS = {}
 option_parser = OptionParser.new do |opts|
     # 这里是这个命令行工具的帮助信息
-    opts.banner='*打包工具 - 使用帮助'
+    opts.banner = '*打包工具-使用帮助'
     opts.on('-m', '--method index', "需要运行的方法序列号:\n") do |value|
         OPTIONS["method_index"] = value
     end
