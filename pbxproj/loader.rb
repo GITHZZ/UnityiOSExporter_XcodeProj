@@ -5,7 +5,7 @@ class PbxprojLoader
     attr_accessor :header_search_paths, :library_search_paths, :framework_search_paths
 
     def initialize()
-        @xcodeproj_path = GLOBAL_CONFIG["xcodeproj_path"] 
+        @xcodeproj_path = SDK_CONFIG["xcodeproj_path"] 
         
         backup_or_revert_pbxproj()
         copy_group_resource_to_project()
@@ -13,15 +13,15 @@ class PbxprojLoader
         @project = Xcodeproj::Project.open(@xcodeproj_path)
         @target = @project.targets.first
 
-        @header_search_paths = get_build_setting(@target, "HEADER_SEARCH_PATHS")
-        @library_search_paths = get_build_setting(@target, "LIBRARY_SEARCH_PATHS")
+        @header_search_paths    = get_build_setting(@target, "HEADER_SEARCH_PATHS")
+        @library_search_paths   = get_build_setting(@target, "LIBRARY_SEARCH_PATHS")
         @framework_search_paths = get_build_setting(@target, "FRAMEWORK_SEARCH_PATHS")
     end 
 
     def is_embed_frameworks?(path)
         basename = Pathname.new(path).basename.to_s
         if PbxprojHelper.win32?
-            embed_framework_list = GLOBAL_CONFIG["embed_framework_list"]
+            embed_framework_list = SDK_CONFIG["embed_framework_list"]
             puts embed_framework_list
             embed_framework_list.each do |fremework_name|
                 if framework_name == basename
@@ -81,7 +81,7 @@ class PbxprojLoader
     # 不直接引用资源目录下的资源，先复制到工程下 再进行引用
     def copy_group_resource_to_project()
         project_folder_path = File.dirname(@xcodeproj_path)
-        sdk_res_path = GLOBAL_CONFIG["sdk_res_path"]
+        sdk_res_path = SDK_CONFIG["sdk_res_path"]
         FileUtils.cp_r sdk_res_path, project_folder_path
         
         @group_full_path = project_folder_path + "/" + Pathname.new(sdk_res_path).basename.to_s
@@ -90,8 +90,8 @@ class PbxprojLoader
     def description()
         content = "xcodeproj={
             projectInfo = #{@project},
-            header_search_paths = {#{@header_search_paths}},
-            library_search_paths = {#{@library_search_paths}},
+            header_search_paths    = {#{@header_search_paths}},
+            library_search_paths   = {#{@library_search_paths}},
             framework_search_paths = {#{@framework_search_paths}}
         }"
         puts content

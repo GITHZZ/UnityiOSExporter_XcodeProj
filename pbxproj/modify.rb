@@ -1,8 +1,5 @@
 # 总体思路有所改变 不再是直接引用，而是将资源拷贝到工程中再进行引用
-require_relative "loader"
-
 class PbxprojModify
-    # ------提供给外部shell调用---------
     def get_shell_support_function()
         return ["method_call_from_shell_1"]
     end 
@@ -11,7 +8,6 @@ class PbxprojModify
         start()
         free()
     end 
-    # --------------------------------
 
     def initialize()
         @loader = PbxprojLoader.new()
@@ -22,11 +18,13 @@ class PbxprojModify
         @group_child_name = @group_name
 
         dir_name = Pathname.new(@loader.group_full_path).basename.to_s
-        @group = create_group(File.join(@group_name), dir_name) #索引路径只获取最上层文件夹名字
+        
+        #索引路径只获取最上层文件夹名字
+        @group = create_group(File.join(@group_name), dir_name) 
 
         @framework_search_paths = @loader.framework_search_paths
-        @header_search_paths = @loader.header_search_paths
-        @library_search_paths = @loader.library_search_paths
+        @header_search_paths    = @loader.header_search_paths
+        @library_search_paths   = @loader.library_search_paths
 
         @embed_build_phases = @loader.get_embed_frameworks()
     end
@@ -35,6 +33,10 @@ class PbxprojModify
         add_build_phase_files(@target, @group, @loader.group_full_path)
         # 整理动态库 
         generate_embed_framework()
+        # 整理系统库
+        generate_system_framework()
+        # 处理链接器参数
+        generate_linker_flags()
         # 新增相关查找路径
 		set_build_search_path()
     end 
@@ -107,6 +109,23 @@ class PbxprojModify
                 end 
             end
         end 
+    end 
+
+    def generate_system_framework()
+        system_framework_list = SYSTEM_CONFIG["framework"]
+        @target.add_system_frameworks(system_framework_list)
+    end 
+
+    def generate_linker_flags()
+        linker_flags = SYSTEM_CONFIG["linker_flags"]
+        linker_flags.insert(linker_flags.size - 1, "-weak_framework")
+        linker_flags.insert(linker_flags.size - 1, "CoreMotion")
+        linker_flags.insert(linker_flags.size - 1, "-weak-lSystem")
+        set_build_setting(@target, "OTHER_LDFLAGS", linker_flags)
+    end 
+
+    def generate_capability()
+
     end 
 
     def set_build_search_path()

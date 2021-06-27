@@ -1,4 +1,6 @@
+require_relative "loader"
 require_relative "modify"
+require_relative "capability"
 
 class Driver
     def initialize()

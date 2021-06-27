@@ -1,9 +1,6 @@
 {
     "1":{
         "xcodeproj_path" : "tests/samples/DemoProject/DemoProject.xcodeproj",
-        "sdk_res_path" : "tests/samples/platform_1/sdk",
-        "group_root_name" : "SDK",
-        "embed_framework_list" : ["GDSeed.framework","HeavenRuins.framework"],
-        "system" : {"mac_password" : 4399,"p12_password":4399 } 
+        "sdk_res_path" : "tests/samples/platform_1/sdk"
     }
 }
