@@ -1,18 +1,18 @@
 require "pathname" 
+require "fileutils"
+require "optparse"
+require "json"
 
 PROJECT_ROOT_FULL_PATH = Pathname.new(File.dirname(__FILE__)).realpath.to_s
 PROJECT_ROOT_PATH = File.dirname(__FILE__)
 
 # 配置搜索路径
 $LOAD_PATH << File.join(PROJECT_ROOT_PATH, "/lib")
+$LOAD_PATH << File.join(PROJECT_ROOT_PATH, "/pbxproj")
 
 require "xcodeproj"
-require "fileutils"
-require "pathname"
-require "optparse"
-require "json"
-
-require_relative "pbxproj/driver"
+require "plist"
+require "driver"
 
 # 获取从shell传过来的参数
 OPTIONS = {}

@@ -7,5 +7,5 @@ require "plist"
 require_relative "pbxproj/capability"
 
 capability_manager = CapabilityManager.new("productName")
-capability_manager.add_apple_pay()
-capability_manager.write_to_file()
+capability_manager.call("add_apple_sign")
+capability_manager.save()

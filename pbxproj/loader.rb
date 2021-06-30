@@ -1,17 +1,23 @@
 require_relative "helper"
 
 class PbxprojLoader
-    attr_reader :xcodeproj_path, :project, :target, :group_full_path
+    attr_reader :xcodeproj_path, :project, :target, :group_full_path, :group_relative_path, :product_name, :capability ,:system_framework, :linker_flags, :sdk_res_path
     attr_accessor :header_search_paths, :library_search_paths, :framework_search_paths
 
     def initialize()
         @xcodeproj_path = SDK_CONFIG["xcodeproj_path"] 
+        @product_name   = SDK_CONFIG["product_name"]
+        @capability     = SDK_CONFIG["capability"]
+        @sdk_res_path   = SDK_CONFIG["sdk_res_path"]
+
+        @system_framework = SYSTEM_CONFIG["framework"]
+        @linker_flags     = SYSTEM_CONFIG["linker_flags"]
         
         backup_or_revert_pbxproj()
         copy_group_resource_to_project()
 
         @project = Xcodeproj::Project.open(@xcodeproj_path)
-        @target = @project.targets.first
+        @target  = @project.targets.first
 
         @header_search_paths    = get_build_setting(@target, "HEADER_SEARCH_PATHS")
         @library_search_paths   = get_build_setting(@target, "LIBRARY_SEARCH_PATHS")
@@ -81,10 +87,12 @@ class PbxprojLoader
     # 不直接引用资源目录下的资源，先复制到工程下 再进行引用
     def copy_group_resource_to_project()
         project_folder_path = File.dirname(@xcodeproj_path)
-        sdk_res_path = SDK_CONFIG["sdk_res_path"]
-        FileUtils.cp_r sdk_res_path, project_folder_path
+        FileUtils.cp_r @sdk_res_path, project_folder_path
         
-        @group_full_path = project_folder_path + "/" + Pathname.new(sdk_res_path).basename.to_s
+        puts project_folder_path
+   
+        @group_relative_path = Pathname.new(@sdk_res_path).basename.to_s
+        @group_full_path = project_folder_path + "/" + Pathname.new(@sdk_res_path).basename.to_s
     end 
 
     def description()

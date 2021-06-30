@@ -12,8 +12,8 @@ class Driver
         # 按顺序存储方法
         method_index = 1
         class_list.each do |cls|
-            method_list = cls.get_shell_support_function()
-            method_list.each do |method_name|
+            method_name_list = cls.get_shell_support_function()
+            method_name_list.each do |method_name|
                 m = cls.method(method_name)
                 @support_method_config[method_index.to_s] = m
                 method_index += 1

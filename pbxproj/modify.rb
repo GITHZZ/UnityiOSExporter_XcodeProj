@@ -1,18 +1,31 @@
 # 总体思路有所改变 不再是直接引用，而是将资源拷贝到工程中再进行引用
 class PbxprojModify
     def get_shell_support_function()
-        return ["method_call_from_shell_1"]
+        method_name_list = [
+            "method_call_from_shell_1_0",
+            "method_call_from_shell_2_0"
+        ]
+        return method_name_list
     end 
 
-    def method_call_from_shell_1(*args)
+    def method_call_from_shell_1_0(*args)
         start()
         free()
     end 
 
+    def method_call_from_shell_2_0(*args)
+        generate_capability()
+    end 
+
     def initialize()
-        @loader = PbxprojLoader.new()
+        @loader = PbxprojLoader.new
         @project = @loader.project
         @target = @loader.target
+        
+        xcodeproj_path = @loader.xcodeproj_path
+        product_name = @loader.product_name
+
+        @capabilityManager = CapabilityManager.new(product_name, @loader.sdk_res_path)
         
         @group_name = GROUP_ROOT_NAME
         @group_child_name = @group_name
@@ -31,6 +44,8 @@ class PbxprojModify
 
     def start()
         add_build_phase_files(@target, @group, @loader.group_full_path)
+        # 处理权限配置
+        generate_capability()
         # 整理动态库 
         generate_embed_framework()
         # 整理系统库
@@ -112,12 +127,12 @@ class PbxprojModify
     end 
 
     def generate_system_framework()
-        system_framework_list = SYSTEM_CONFIG["framework"]
+        system_framework_list = @loader.system_framework
         @target.add_system_frameworks(system_framework_list)
     end 
 
     def generate_linker_flags()
-        linker_flags = SYSTEM_CONFIG["linker_flags"]
+        linker_flags = @loader.linker_flags
         linker_flags.insert(linker_flags.size - 1, "-weak_framework")
         linker_flags.insert(linker_flags.size - 1, "CoreMotion")
         linker_flags.insert(linker_flags.size - 1, "-weak-lSystem")
@@ -125,7 +140,14 @@ class PbxprojModify
     end 
 
     def generate_capability()
+        capability = @loader.capability
+        capability.each do |method_name, args|
+            @capabilityManager.call(method_name, args)
+        end
 
+        entitlements_file_name = @capabilityManager.save()
+        entitlements_path_in_project = @loader.group_relative_path + "/" + entitlements_file_name
+        set_build_setting(@target, "CODE_SIGN_ENTITLEMENTS", entitlements_path_in_project)
     end 
 
     def set_build_search_path()
