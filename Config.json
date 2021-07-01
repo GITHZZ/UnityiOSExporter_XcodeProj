@@ -4,7 +4,8 @@
         "sdk_res_path" : "tests/samples/platform_1/sdk",
         "product_name" : "demo",
         "capability" : {
-            "add_apple_sign" : []
+            "add_apple_sign"     : [],
+            "add_inapp_purchase" : []
         }
     }
 }

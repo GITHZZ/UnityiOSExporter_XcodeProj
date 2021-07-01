@@ -28,7 +28,6 @@ class PbxprojLoader
         basename = Pathname.new(path).basename.to_s
         if PbxprojHelper.win32?
             embed_framework_list = SDK_CONFIG["embed_framework_list"]
-            puts embed_framework_list
             embed_framework_list.each do |fremework_name|
                 if framework_name == basename
                     return true
@@ -88,8 +87,6 @@ class PbxprojLoader
     def copy_group_resource_to_project()
         project_folder_path = File.dirname(@xcodeproj_path)
         FileUtils.cp_r @sdk_res_path, project_folder_path
-        
-        puts project_folder_path
    
         @group_relative_path = Pathname.new(@sdk_res_path).basename.to_s
         @group_full_path = project_folder_path + "/" + Pathname.new(@sdk_res_path).basename.to_s

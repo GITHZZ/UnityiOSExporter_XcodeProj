@@ -140,11 +140,19 @@ class PbxprojModify
     end 
 
     def generate_capability()
+        system_framework_list = []
+
         capability = @loader.capability
         capability.each do |method_name, args|
-            @capabilityManager.call(method_name, args)
+            capability_type = @capabilityManager.call(method_name, args)
+            framework = capability_type.framework
+            if !framework.empty?
+                system_framework_list.push(framework)
+            end 
         end
 
+        @target.add_system_frameworks(system_framework_list)
+        
         entitlements_file_name = @capabilityManager.save()
         entitlements_path_in_project = @loader.group_relative_path + "/" + entitlements_file_name
         set_build_setting(@target, "CODE_SIGN_ENTITLEMENTS", entitlements_path_in_project)

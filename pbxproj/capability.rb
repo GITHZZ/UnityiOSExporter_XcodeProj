@@ -26,7 +26,7 @@ class CapabilityManager
 
         @apple_sign = CapabilityType.new("com.apple.developer.applesignin", true)
         @push_notifications = CapabilityType.new("aps-environment", true)
-        @inapp_purchase = CapabilityType.new("com.apple.InAppPurchase", false, "StoreKit.framework")
+        @inapp_purchase = CapabilityType.new("com.apple.InAppPurchase", false, "StoreKit")
         
         @support_method_config = Hash.new
 
@@ -58,19 +58,21 @@ class CapabilityManager
     def add_apple_sign(*args)
         id = @apple_sign.id
         @entitlements_content[id] = ["Default"]
+        return @apple_sign
     end
 
     # 新增通知标签
     def add_push_notifications(*args)
         id = @push_notifications.id
         @entitlements_content[id] = "development"
+        return @push_notifications
     end 
    
     # 新增内购
     def add_inapp_purchase(*args)
         id = @inapp_purchase.id
         fremework = @inapp_purchase.framework
-
+        return @inapp_purchase
     end 
 
     def save()
