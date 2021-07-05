@@ -36,8 +36,9 @@ if method_index.nil? || config_key.nil?
     return
 end 
 
-sdk_Json = File.read("config.json")
-system_json = File.read("system.json")
+# 兼容不在工程目录下情况
+sdk_Json = File.read(PROJECT_ROOT_FULL_PATH + "/config.json")
+system_json = File.read(PROJECT_ROOT_FULL_PATH + "/system.json")
 
 sdk_map = JSON.parse(sdk_Json)
 system_map = JSON.parse(system_json)

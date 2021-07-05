@@ -31,9 +31,6 @@ class PbxprojModify
         @group_child_name = @group_name
 
         dir_name = Pathname.new(@loader.group_full_path).basename.to_s
-        
-        #索引路径只获取最上层文件夹名字
-        @group = create_group(File.join(@group_name), dir_name) 
 
         @framework_search_paths = @loader.framework_search_paths
         @header_search_paths    = @loader.header_search_paths
@@ -43,6 +40,9 @@ class PbxprojModify
     end
 
     def start()
+        #索引路径只获取最上层文件夹名字
+        @group = create_group(File.join(@group_name), dir_name) 
+        
         add_build_phase_files(@target, @group, @loader.group_full_path)
         # 处理权限配置
         generate_capability()
@@ -154,7 +154,12 @@ class PbxprojModify
         @target.add_system_frameworks(system_framework_list)
         
         entitlements_file_name = @capabilityManager.save()
-        entitlements_path_in_project = @loader.group_relative_path + "/" + entitlements_file_name
+        if @loader.group_relative_path.empty?
+            entitlements_path_in_project = entitlements_file_name
+        else
+            entitlements_path_in_project = @loader.group_relative_path + "/" + entitlements_file_name
+        end 
+
         set_build_setting(@target, "CODE_SIGN_ENTITLEMENTS", entitlements_path_in_project)
     end 
 

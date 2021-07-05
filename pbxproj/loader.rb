@@ -86,10 +86,15 @@ class PbxprojLoader
     # 不直接引用资源目录下的资源，先复制到工程下 再进行引用
     def copy_group_resource_to_project()
         project_folder_path = File.dirname(@xcodeproj_path)
-        FileUtils.cp_r @sdk_res_path, project_folder_path
    
         @group_relative_path = Pathname.new(@sdk_res_path).basename.to_s
         @group_full_path = project_folder_path + "/" + Pathname.new(@sdk_res_path).basename.to_s
+    
+        if !@sdk_res_path.empty?
+            FileUtils.cp_r @sdk_res_path, project_folder_path
+        else # 如果没有传sdk路径 那么直接使用工程路径
+            @sdk_res_path = project_folder_path
+        end
     end 
 
     def description()
