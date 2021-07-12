@@ -45,8 +45,9 @@ system_map = JSON.parse(system_json)
 
 # 获取具体配置
 SDK_CONFIG = sdk_map[config_key] 
-SYSTEM_CONFIG = system_map 
+SYSTEM_CONFIG = system_map
 GROUP_ROOT_NAME = SYSTEM_CONFIG["group_root_name"]
 
-driver = Driver.new
-driver.call(method_index)
+inst = Driver.instance
+inst.init()
+inst.call(method_index)

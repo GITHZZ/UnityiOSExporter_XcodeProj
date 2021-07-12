@@ -1,24 +1,49 @@
+require "singleton"
+
 require_relative "loader"
 require_relative "modify"
 require_relative "capability"
+require_relative "plist"
 
 class Driver
-    def initialize()
-        @support_method_config = Hash.new
-        class_list = [
-            PbxprojModify.new()
+    include Singleton
+
+    def init()
+        @class_list = [
+            PbxprojModify.new(),
+            PbxprojPlist.new(),
+            CapabilityManager.new()
         ]
         
+        @class_map = Hash.new
+        @support_method_config = Hash.new
+
         # 按顺序存储方法
         method_index = 1
-        class_list.each do |cls|
+        @class_list.each do |cls|            
+            name = cls.class.name
+            @class_map[name] = cls
+            
             method_name_list = cls.get_shell_support_function()
             method_name_list.each do |method_name|
                 m = cls.method(method_name)
                 @support_method_config[method_index.to_s] = m
                 method_index += 1
             end
-        end 
+        end
+
+        # 调用所有的初始化
+        @class_map.each do |name, cls|
+            cls.init()
+        end
+    end 
+
+    def get_class(name)
+        if !@class_map.has_key?(name)
+            puts "不存在类名:" + name
+            return
+        end
+        return @class_map[name]
     end 
 
     def call(index)

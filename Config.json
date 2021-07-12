@@ -6,6 +6,13 @@
         "capability" : {
             "add_apple_sign"     : [],
             "add_inapp_purchase" : []
+        },
+        "framework":["Accounts"],
+        "libraries":["afc"],
+        "plist" : {
+            "CFBundleDisplayName" : "",
+            "CFBundleShortVersionString" : "",
+            "CFBundleVersion" : ""
         }
     }
 }

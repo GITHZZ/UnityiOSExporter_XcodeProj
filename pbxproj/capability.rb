@@ -16,29 +16,35 @@ class CapabilityType
 end
 
 class CapabilityManager
-    # 初始化需要传入两个参数
-    # productName：app二进制名字
-    # to_folder：需要将entitlements放到哪个文件夹中 这个一般传入sdk文件夹即可
-    def initialize(productName, to_folder = "")
-        @entitlements_file_name = productName.to_s + ".entitlements"
-        @entitlements_content = Hash.new
-        @entitlements_save_folder = to_folder
-
+    def get_shell_support_function()
+        return []
+    end 
+    
+    def init()
         @apple_sign = CapabilityType.new("com.apple.developer.applesignin", true)
         @push_notifications = CapabilityType.new("aps-environment", true)
         @inapp_purchase = CapabilityType.new("com.apple.InAppPurchase", false, "StoreKit")
-        
+    end 
+
+    # 初始化需要传入两个参数
+    # productName：app二进制名字
+    # to_folder：需要将entitlements放到哪个文件夹中 这个一般传入sdk文件夹即可
+    def set_info(product_name, to_folder = "")
+        @entitlements_file_name = product_name.to_s + ".entitlements"
+        @entitlements_content = Hash.new
+        @entitlements_save_folder = to_folder
+
         @support_method_config = Hash.new
 
         # 注册可以支持的方法名字
-        regist_support_method()
-    end
+        regist_support_method() 
+    end 
 
     def regist_support_method()
         method_name_list = [
             "add_apple_sign",
             "add_push_notifications",
-            "add_inapp_purchase",
+            "add_inapp_purchase"
         ]
         method_name_list.each do |method_name|
             m = self.method(method_name)

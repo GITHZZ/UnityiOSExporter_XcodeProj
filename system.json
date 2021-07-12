@@ -3,5 +3,9 @@
     "mac_password" : 4399,
     "p12_password" : 4399,
     "framework" : ["Accessibility"],
-    "linker_flags" : []
+    "libraries":["AppleArchive"],
+    "linker_flags" : [],
+    "plist" : {
+             
+    }
 }

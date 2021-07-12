@@ -1,22 +1,17 @@
 require_relative "helper"
 
 class PbxprojLoader
-    attr_reader :xcodeproj_path, :project, :target, :group_full_path, :group_relative_path, :product_name, :capability ,:system_framework, :linker_flags, :sdk_res_path
+    attr_reader :project, :target, :sdk_config, :system_config
     attr_accessor :header_search_paths, :library_search_paths, :framework_search_paths
 
     def initialize()
-        @xcodeproj_path = SDK_CONFIG["xcodeproj_path"] 
-        @product_name   = SDK_CONFIG["product_name"]
-        @capability     = SDK_CONFIG["capability"]
-        @sdk_res_path   = SDK_CONFIG["sdk_res_path"]
-
-        @system_framework = SYSTEM_CONFIG["framework"]
-        @linker_flags     = SYSTEM_CONFIG["linker_flags"]
+        @sdk_config = SDK_CONFIG
+        @system_config = SYSTEM_CONFIG
         
         backup_or_revert_pbxproj()
         copy_group_resource_to_project()
 
-        @project = Xcodeproj::Project.open(@xcodeproj_path)
+        @project = Xcodeproj::Project.open(@sdk_config["xcodeproj_path"])
         @target  = @project.targets.first
 
         @header_search_paths    = get_build_setting(@target, "HEADER_SEARCH_PATHS")
@@ -72,6 +67,7 @@ class PbxprojLoader
     # 在修改xcode之前，先将原文件的pbxproj备份一次，然后下次修改时候先从备份文件还原，再进行下一次操作
     # 主要是为了避免频繁操作导致pbxproj文件乱问题
     def backup_or_revert_pbxproj()
+        xcodeproj_path = @sdk_config["xcodeproj_path"]
         pbxproj_file_path = xcodeproj_path + "/project.pbxproj"
         backup_pbxproj_file_path = xcodeproj_path + "/.project.pbxproj_backup"
 
@@ -85,15 +81,21 @@ class PbxprojLoader
     
     # 不直接引用资源目录下的资源，先复制到工程下 再进行引用
     def copy_group_resource_to_project()
-        project_folder_path = File.dirname(@xcodeproj_path)
-   
-        @group_relative_path = Pathname.new(@sdk_res_path).basename.to_s
-        @group_full_path = project_folder_path + "/" + Pathname.new(@sdk_res_path).basename.to_s
-    
-        if !@sdk_res_path.empty?
-            FileUtils.cp_r @sdk_res_path, project_folder_path
+        xcodeproj_path = @sdk_config["xcodeproj_path"]
+        sdk_res_path = @sdk_config["sdk_res_path"]
+
+        project_folder_path = File.dirname(xcodeproj_path)
+
+        group_relative_path = Pathname.new(sdk_res_path).basename.to_s
+        group_full_path = project_folder_path + "/" + Pathname.new(sdk_res_path).basename.to_s
+        
+        @sdk_config["group_relative_path"] = group_relative_path
+        @sdk_config["group_full_path"] = group_full_path
+
+        if !sdk_res_path.empty?
+            FileUtils.cp_r sdk_res_path, project_folder_path
         else # 如果没有传sdk路径 那么直接使用工程路径
-            @sdk_res_path = project_folder_path
+            sdk_res_path = project_folder_path
         end
     end 
 
@@ -108,7 +110,6 @@ class PbxprojLoader
     end 
 
     def free()
-        @xcodeproj_path = nil
         @project.save
     end 
 end 

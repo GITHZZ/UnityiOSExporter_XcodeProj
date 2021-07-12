@@ -17,21 +17,24 @@ class PbxprojModify
         generate_capability()
     end 
 
-    def initialize()
-        @loader = PbxprojLoader.new
+    def init()
+        @loader  = PbxprojLoader.new
         @project = @loader.project
-        @target = @loader.target
+        @target  = @loader.target
         
-        xcodeproj_path = @loader.xcodeproj_path
-        product_name = @loader.product_name
+        @sdk_config    = @loader.sdk_config
+        @system_config = @loader.system_config
 
-        @capabilityManager = CapabilityManager.new(product_name, @loader.sdk_res_path)
+        xcodeproj_path = @sdk_config["xcodeproj_path"]
+        product_name   = @sdk_config["product_name"]
+        sdk_res_path   = @sdk_config["sdk_res_path"]
+
+        @capabilityManager =  Driver.instance.get_class("CapabilityManager")
+        @capabilityManager.set_info(product_name, sdk_res_path) 
         
         @group_name = GROUP_ROOT_NAME
         @group_child_name = @group_name
-
-        dir_name = Pathname.new(@loader.group_full_path).basename.to_s
-
+       
         @framework_search_paths = @loader.framework_search_paths
         @header_search_paths    = @loader.header_search_paths
         @library_search_paths   = @loader.library_search_paths
@@ -41,15 +44,21 @@ class PbxprojModify
 
     def start()
         #索引路径只获取最上层文件夹名字
+        group_full_path = @loader.sdk_config["group_full_path"]
+        dir_name = Pathname.new(group_full_path).basename.to_s
+        
         @group = create_group(File.join(@group_name), dir_name) 
         
-        add_build_phase_files(@target, @group, @loader.group_full_path)
+        add_build_phase_files(@target, @group, group_full_path)
+        
         # 处理权限配置
         generate_capability()
         # 整理动态库 
         generate_embed_framework()
         # 整理系统库
         generate_system_framework()
+        # 新增tbd文件
+        generate_system_libraries()
         # 处理链接器参数
         generate_linker_flags()
         # 新增相关查找路径
@@ -77,7 +86,7 @@ class PbxprojModify
         ".DS_Store" => true,
     }
     def add_build_phase_files(target, group, group_relative_path)
-        if File.exists?(group_relative_path) == false
+        if !File.exists?(group_relative_path)
             puts group_relative_path + "\tpath is not exist"
             return
         end
@@ -127,12 +136,17 @@ class PbxprojModify
     end 
 
     def generate_system_framework()
-        system_framework_list = @loader.system_framework
-        @target.add_system_frameworks(system_framework_list)
+        @target.add_system_frameworks(@system_config["framework"])
+        @target.add_system_frameworks(@sdk_config["framework"])
+    end 
+
+    def generate_system_libraries()
+        @target.add_system_library_tbd(@system_config["libraries"])
+        @target.add_system_library_tbd(@sdk_config["libraries"])
     end 
 
     def generate_linker_flags()
-        linker_flags = @loader.linker_flags
+        linker_flags = @system_config["linker_flags"] 
         linker_flags.insert(linker_flags.size - 1, "-weak_framework")
         linker_flags.insert(linker_flags.size - 1, "CoreMotion")
         linker_flags.insert(linker_flags.size - 1, "-weak-lSystem")
@@ -142,7 +156,7 @@ class PbxprojModify
     def generate_capability()
         system_framework_list = []
 
-        capability = @loader.capability
+        capability = @sdk_config["capability"]
         capability.each do |method_name, args|
             capability_type = @capabilityManager.call(method_name, args)
             framework = capability_type.framework
@@ -154,10 +168,11 @@ class PbxprojModify
         @target.add_system_frameworks(system_framework_list)
         
         entitlements_file_name = @capabilityManager.save()
-        if @loader.group_relative_path.empty?
+        group_relative_path = @loader.sdk_config["group_relative_path"]
+        if group_relative_path.empty?
             entitlements_path_in_project = entitlements_file_name
         else
-            entitlements_path_in_project = @loader.group_relative_path + "/" + entitlements_file_name
+            entitlements_path_in_project = group_relative_path + "/" + entitlements_file_name
         end 
 
         set_build_setting(@target, "CODE_SIGN_ENTITLEMENTS", entitlements_path_in_project)
